@@ -45,12 +45,3 @@ fetch(url, options)
     }    
 })
 .catch(error => console.log("error", error));
-
-
-
-/*
-var NewObjFromREST_my = new NewObjFromREST(RESTObj.value, RESTObj.unrestricted_value, RESTObj.data.street, RESTObj.data.region);
-let srt =JSON.stringify(NewObjFromREST_my);
-let obj = JSON.parse(srt);
-console.log(obj);*/
-

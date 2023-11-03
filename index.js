@@ -15,33 +15,41 @@ var options = {
 
 
 
-function NewObjFromREST (value, unrestricted_value, street, region)
+function NewObjFromREST (item, Regular)
 {
-    return {
-    value: value,
-    unrestricted_value: unrestricted_value,
-    data :{
-        street: street,
-        region: region,
-    },
+    list_prop = Regular.replace('/', '').replace('/', '').split("|");
+    let NewObj ={};
+    for (let i of list_prop){
+        if (i.includes(".")){
+            new_list = i.split(".");
+            if (NewObj[new_list[0]] === undefined) NewObj[new_list[0]] = {};
+            NewObj[new_list[0]][new_list[1]] = item[new_list[0]][new_list[1]];
+        }
+        else{
+            NewObj[i] = item[i]; 
+        }
     }
+    return NewObj;
 }
 
 
-
-fetch(url, options)
-.then(response => response.json())
-.then(result =>  {
+async function get_return (movies) {
     var ListResultOdject = []
-    for (let item of result.suggestions){
-        let NewObjFromREST_item = new NewObjFromREST(item.value, item.unrestricted_value, item.data.street, item.data.region);
+    for (let item of movies.suggestions){
+        let NewObjFromREST_item = new NewObjFromREST(item, '/value|unrestricted_value|data.street|data.region/');
         ListResultOdject.push(NewObjFromREST_item);
     }
-    return ListResultOdject;})
-.then(ListResultOdject => {
-    for (let item of ListResultOdject){
-        let JsonResultObj =JSON.stringify(item);
-        console.log(JsonResultObj);
-    }    
-})
-.catch(error => console.log("error", error));
+    return ListResultOdject;
+}
+
+
+async function fetchMoviesJSON(url, options) {
+    const response = await fetch(url, options)
+    const movies = await response.json()
+    let ListResultOdject = await get_return (movies);
+    return ListResultOdject;
+}   
+
+fetchMoviesJSON(url, options).then(ListResultOdject => {
+    console.log(ListResultOdject);
+});

@@ -14,42 +14,34 @@ var options = {
 }
 
 
+function newObjFromREST (item, Regular){
+    let KeysData = Object.keys(item["data"]).join(" ");
+    ListProp = KeysData.match(Regular);
 
-function NewObjFromREST (item, Regular)
-{
-    list_prop = Regular.replace('/', '').replace('/', '').split("|");
     let NewObj ={};
-    for (let i of list_prop){
-        if (i.includes(".")){
-            new_list = i.split(".");
-            if (NewObj[new_list[0]] === undefined) NewObj[new_list[0]] = {};
-            NewObj[new_list[0]][new_list[1]] = item[new_list[0]][new_list[1]];
-        }
-        else{
-            NewObj[i] = item[i]; 
-        }
-    }
+    NewObj["value"] = item["value"];
+    NewObj["unrestricted_value"] = item["unrestricted_value"];
+    if (NewObj["data"] === undefined) {NewObj["data"] = {};}
+    for (let prop of ListProp) {NewObj["data"][prop] = item["data"][prop];}
     return NewObj;
-}
-
-
-async function get_return (movies) {
-    var ListResultOdject = []
-    for (let item of movies.suggestions){
-        let NewObjFromREST_item = new NewObjFromREST(item, '/value|unrestricted_value|data.street|data.region/');
-        ListResultOdject.push(NewObjFromREST_item);
-    }
-    return ListResultOdject;
 }
 
 
 async function fetchMoviesJSON(url, options) {
     const response = await fetch(url, options)
     const movies = await response.json()
-    let ListResultOdject = await get_return (movies);
+    let ListResultOdject = await (async (movies)=>{
+        let ListResultOdject = [];
+        for (let item of movies.suggestions){
+            let NewObjFromREST_item = new newObjFromREST(item, /\bstreet\b|\bregion\b/gi);
+            ListResultOdject.push(NewObjFromREST_item);
+        }
+        return ListResultOdject;
+    }) (movies);
     return ListResultOdject;
 }   
 
 fetchMoviesJSON(url, options).then(ListResultOdject => {
     console.log(ListResultOdject);
 });
+
